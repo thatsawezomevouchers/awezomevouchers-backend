@@ -3,7 +3,16 @@ import cors from 'cors';
 
 const app = express();
 
-app.use(cors());
+// CORS configuration
+app.use(cors({
+  origin: [
+    'https://awezomevouchers.vercel.app',
+    'https://awezomevouchers-frontend.vercel.app',
+    'https://awazonnewachers-frontend-4dac7j9f1-awazonres-projects.vercel.app'
+  ],
+  credentials: true
+}));
+
 app.use(express.json());
 
 app.get('/', (req, res) => {
@@ -11,8 +20,12 @@ app.get('/', (req, res) => {
 });
 
 // Health check endpoint
-app.get('/api/health', (req, res) => {
-  res.json({ status: 'OK', message: 'Backend is working' });
+app.get('/health', (req, res) => {
+  res.json({ 
+    status: 'OK', 
+    message: 'Backend is working',
+    timestamp: new Date().toISOString()
+  });
 });
 
 const PORT = process.env.PORT || 3000;
