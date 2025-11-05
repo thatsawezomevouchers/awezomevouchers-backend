@@ -10,30 +10,28 @@ export default async function handler(req, res) {
     const { price, name, email, phone } = req.body;
 
     const session = await stripe.checkout.sessions.create({
-      payment_method_types: ["card", "apple_pay"],
-      mode: "payment",
+      payment_method_types: ["card"],
       line_items: [
         {
           price_data: {
             currency: "usd",
             product_data: {
-              name: "Awezome Vacation Voucher",
-              description: `Voucher for ${name || "Customer"}`
+              name: `Voucher for ${name}`,
+              description: `Contact: ${email}, ${phone}`,
             },
             unit_amount: price * 100,
           },
           quantity: 1,
         },
       ],
-      customer_email: email,
-      metadata: { phone },
+      mode: "payment",
       success_url: "https://awezomevouchers-frontend.vercel.app/success.html",
       cancel_url: "https://awezomevouchers-frontend.vercel.app/cancel.html",
     });
 
-    res.status(200).json({ url: session.url });
+    res.status(200).json({ sessionId: session.id });
   } catch (err) {
-    console.error("Stripe error:", err);
-    res.status(500).json({ error: err.message });
+    console.error(err);
+    res.status(500).json({ error: "Failed to create checkout session" });
   }
 }
