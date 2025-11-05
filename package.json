@@ -1,9 +1,9 @@
 {
   "name": "awezomevouchers-backend",
   "version": "1.0.0",
-  "description": "Backend for AweZome Vouchers",
   "main": "index.js",
+  "type": "module",
   "dependencies": {
-    "stripe": "^14.0.0"
+    "stripe": "^12.0.0"
   }
 }
