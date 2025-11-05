@@ -3,12 +3,14 @@ import cors from 'cors';
 
 const app = express();
 
-// CORS configuration
+// CORS configuration - allow all Vercel domains
 app.use(cors({
   origin: [
     'https://awezomevouchers.vercel.app',
     'https://awezomevouchers-frontend.vercel.app',
-    'https://awazonnewachers-frontend-4dac7j9f1-awazonres-projects.vercel.app'
+    'https://awazonnewachers-frontend-4dac7j9f1-awazonres-projects.vercel.app',
+    'https://awazonnewachers-frontend-albggbgbon-awazomes-projects.vercel.app',
+    'http://localhost:3000'
   ],
   credentials: true
 }));
