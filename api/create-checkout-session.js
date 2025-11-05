@@ -1,61 +1,53 @@
-// api/create-checkout-session.js
-import Stripe from "stripe";
+import Stripe from 'stripe';
 
-/**
- * Serverless endpoint for creating Stripe Checkout Sessions.
- * Deploy to Vercel in the repository "awezomevouchers-backend" under /api/create-checkout-session.js
- *
- * Requirements:
- * - Environment variable STRIPE_SECRET_KEY must be set in the Vercel project (Production).
- */
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 export default async function handler(req, res) {
-  if (req.method !== "POST") {
-    res.setHeader("Allow", "POST");
-    return res.status(405).json({ error: "Method not allowed" });
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const stripeKey = process.env.STRIPE_SECRET_KEY;
-  if (!stripeKey) {
-    console.error("Missing STRIPE_SECRET_KEY env var");
-    return res.status(500).json({ error: "Server configuration error" });
+  const { country, city, name, email, phone, price } = req.body;
+
+  // Validate required fields
+  if (!country || !city || !email) {
+    return res.status(400).json({ error: 'Missing required fields: country, city, email' });
   }
 
-  const stripe = new Stripe(stripeKey);
+  const finalPrice = price || 99;
 
   try {
-    const { country, city, name, email, phone, price } = req.body || {};
-
-    if (!country || !city || !email || !price) {
-      return res.status(400).json({ error: "Missing required fields (country, city, email, price)." });
-    }
-
-    // Create a Checkout Session
     const session = await stripe.checkout.sessions.create({
-      mode: "payment",
-      payment_method_types: ["card"],
-      customer_email: email,
+      payment_method_types: ['card'],
+      mode: 'payment',
       line_items: [
         {
           price_data: {
-            currency: "usd",
+            currency: 'usd',
             product_data: {
-              name: `${country} — ${city}`,
-              description: `Voucher for ${name || "Customer"} (${phone || "no phone"})`,
+              name: `Vacation Voucher - ${city}, ${country}`,
+              description: `Customer: ${name || 'Not provided'} | Email: ${email} | Phone: ${phone || 'Not provided'}`
             },
-            unit_amount: Math.round(Number(price) * 100),
+            unit_amount: finalPrice * 100,
           },
           quantity: 1,
         },
       ],
-      // redirect back to the calling origin if available (works with Vercel)
-      success_url: `${req.headers.origin || "https://awezomevouchers-frontend.vercel.app"}/success.html`,
-      cancel_url: `${req.headers.origin || "https://awezomevouchers-frontend.vercel.app"}/cancel.html`,
+      customer_email: email,
+      success_url: 'https://awezomevouchers.vercel.app/success.html',
+      cancel_url: 'https://awezomevouchers.vercel.app/cancel.html',
+      metadata: {
+        customer_name: name,
+        customer_email: email,
+        customer_phone: phone,
+        destination_country: country,
+        destination_city: city
+      }
     });
 
-    return res.status(200).json({ url: session.url });
-  } catch (err) {
-    console.error("Stripe error:", err);
-    return res.status(500).json({ error: err.message || "Failed to create session" });
+    res.status(200).json({ url: session.url });
+  } catch (error) {
+    console.error('Stripe error:', error);
+    res.status(500).json({ error: 'Failed to create checkout session: ' + error.message });
   }
 }
