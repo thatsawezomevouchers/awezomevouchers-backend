@@ -1,9 +1,15 @@
 {
   "name": "awezomevouchers-backend",
   "version": "1.0.0",
-  "main": "index.js",
+  "description": "Backend for Awezome Vouchers",
   "type": "module",
+  "scripts": {
+    "start": "node ./api/create-checkout-session.js"
+  },
   "dependencies": {
     "stripe": "^12.0.0"
+  },
+  "engines": {
+    "node": "18.x"
   }
 }
